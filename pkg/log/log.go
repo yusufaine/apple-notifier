@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 )
 
-var ProjectID = os.Getenv("GOOGLE_CLOUD_PROJECT")
+const CloudFuncKey = "FUNCTION_SIGNATURE_TYPE"
 
-func SetupSlog() {
+func init() {
 	// if local environment, don't change slog
-	if ProjectID == "" {
+	if _, found := os.LookupEnv(CloudFuncKey); !found {
 		return
 	}
 

@@ -8,7 +8,7 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 	"github.com/yusufaine/apple-inventory-notifier/internal/app/notifier"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/apple"
-	"github.com/yusufaine/apple-inventory-notifier/pkg/log"
+	_ "github.com/yusufaine/apple-inventory-notifier/pkg/log"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/tg"
 )
 
@@ -17,7 +17,6 @@ func init() {
 }
 
 func apple_notifierHandler(w http.ResponseWriter, r *http.Request) {
-	log.SetupSlog()
 	defer func() {
 		if r := recover(); r != nil {
 			logMsg := "apple notifier error"
