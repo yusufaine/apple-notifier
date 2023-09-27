@@ -2,6 +2,7 @@ package alert
 
 import (
 	"fmt"
+	"log/slog"
 	"slices"
 	"strings"
 
@@ -90,6 +91,9 @@ func GenerateFromResponse(ar *apple.Response) []Alert {
 		alerts = append(alerts, alert)
 	}
 
+	slog.Info("generated alerts",
+		slog.Int("alert_count", len(alerts)),
+		slog.Int("model_count", len(modelNameLookup)))
 	return alerts
 }
 
@@ -103,6 +107,5 @@ func isAvailable(storeAvail bool, partAvail string, model string) bool {
 		panic(fmt.Sprintf("unable to parse availability: %s", partAvail))
 	}
 
-	// slog.Error("DEBUGGING AVAILABILITY", slog.String("model", model), slog.Bool("avail", part && storeAvail))
 	return part && storeAvail
 }

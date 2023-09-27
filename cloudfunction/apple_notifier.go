@@ -47,4 +47,5 @@ func apple_notifierHandler(w http.ResponseWriter, r *http.Request) {
 		slog.Error("notifier failed", slog.String("error", err.Error()))
 		fmt.Fprintln(w, "notifier failed")
 	}
+	slog.Info("notifier completed")
 }
