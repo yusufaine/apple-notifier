@@ -72,7 +72,7 @@ func (b *Bot) Delete(msgId int) error {
 	return nil
 }
 
-func (tw *Bot) Write(text string, p ParseMode) (int, error) {
+func (tw *Bot) Send(text string, p ParseMode) (int, error) {
 	reqBody, err := json.Marshal(map[string]interface{}{
 		"chat_id":                  tw.chatId,
 		"disable_web_page_preview": true,
@@ -109,7 +109,7 @@ func (tw *Bot) Write(text string, p ParseMode) (int, error) {
 
 // This blocks the program for the specified duration
 func (tw *Bot) TempWrite(text string, d time.Duration, p ParseMode) {
-	msgId, err := tw.Write(text, p)
+	msgId, err := tw.Send(text, p)
 	if err != nil {
 		slog.Error("unable to temp write to telegram", slog.String("error", err.Error()))
 		return

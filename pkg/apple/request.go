@@ -17,6 +17,8 @@ Example:
 	  "country": "singapore"
 	}
 */
+
+// Fields are guaranteed to be not empty
 type RequestParams struct {
 	AbbrevCountry string   `json:"abbrev_country"`
 	Country       string   `json:"country"`
