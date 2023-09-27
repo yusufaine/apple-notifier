@@ -5,15 +5,9 @@ Telegram bot that notifies you when the Apple Store in Singapore has the product
 ![Screenshot of Telegram bot](./assets/demo.png)
 
 > [!IMPORTANT]
-> Refer to `tracking_request.json` to view the models that are currently being tracked. Feel free to open an issue or submit a pull request to add more models to track.
-
-<!-- omit in toc -->
-## Table of Content
-
-- [Tech Stack](#tech-stack)
-  - [Local development and testing](#local-development-and-testing)
-  - [Deploying](#deploying)
-    - [Tracking other Apple Stores](#tracking-other-apple-stores)
+> Refer to `tracking_request.json` to view the models that are currently being tracked.
+>
+> Feel free to open an issue or submit a pull request to add more models to track.
 
 ## Tech Stack
 
@@ -23,8 +17,8 @@ Telegram bot that notifies you when the Apple Store in Singapore has the product
 - [Telegram Bot API](https://core.telegram.org/bots/api) for sending notifications
 <!-- - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) for data persistence -->
 
-<!-- > [!NOTE]
-> For the full details, feel free to read [in the companion article](./assets/article.md). -->
+> [!NOTE]
+> For the full details, feel free to read in the [devlog](https://github.com/yusufaine/apple-notifier/blob/main/assets/devlog.md).
 
 ### Local development and testing
 

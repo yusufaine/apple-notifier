@@ -1,6 +1,5 @@
 .env
 env.yaml
 *.zip
-assets/article.md
 
 tmp/
