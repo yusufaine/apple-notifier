@@ -25,7 +25,7 @@ Telegram bot that notifies you when the Apple Store in Singapore has the product
 ```bash
 FUNCTION_NAME=apple_notifier go run cmd/localcf/main.go
 # Alternatively, use the .env file
-# env $(cat .env | xargs) make testcf
+# env $(cat .env | xargs) go run cmd/localcf/main.go
 ```
 
 ### Deploying
@@ -33,7 +33,7 @@ FUNCTION_NAME=apple_notifier go run cmd/localcf/main.go
 ```bash
 FUNCTION_NAME=apple_notifier go run cmd/zipcf/main.go
 # Alternatively, use the .env file
-# env $(cat .env | xargs) make zipcf
+# env $(cat .env | xargs) go run cmd/zipcf/main.go
 ```
 
 1. Zip the cloud function using the command above
@@ -52,5 +52,4 @@ You can also run your own instance of the bot to track models from other countri
   "country": "hong kong",
   "models": ["MU7J3ZP/A", "MU7E3ZP/A", "MU793ZP/A"]
 }
-
 ```

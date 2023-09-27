@@ -1,8 +1,12 @@
 package mg
 
-import "os"
+import (
+	"context"
+	"os"
+)
 
 type Config struct {
+	Context  context.Context
 	MongoDb  string
 	MongoUri string
 }
@@ -16,8 +20,9 @@ func (c *Config) mustValidate() {
 	}
 }
 
-func NewConfig() *Config {
+func NewConfig(ctx context.Context) *Config {
 	c := &Config{
+		Context:  ctx,
 		MongoDb:  os.Getenv("MONGO_DB"),
 		MongoUri: os.Getenv("MONGO_URI"),
 	}

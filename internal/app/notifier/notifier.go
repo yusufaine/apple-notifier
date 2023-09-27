@@ -5,21 +5,91 @@ import (
 
 	"github.com/yusufaine/apple-inventory-notifier/pkg/alert"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/apple"
+	"github.com/yusufaine/apple-inventory-notifier/pkg/mg"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/tg"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
-func Start(ap *apple.RequestParams, tgBot *tg.Bot) error {
-	parsedResponse, err := ap.Do()
-	if err != nil {
-		return err
-	}
-
-	alerts := alert.GenerateFromResponse(parsedResponse)
-	for _, alert := range alerts {
-		if _, err := tgBot.Write(alert.ToTelegramHTMLString(), tg.ParseHTML); err != nil {
-			return err
+func Start(ap *apple.RequestParams, tgBot *tg.Bot, alertCol *mg.Collection) {
+	// Prune alerts
+	msgIdsToDelete := pruneStaleMongoAlertsByModel(alertCol, ap.Models)
+	for _, msgId := range msgIdsToDelete {
+		if err := tgBot.Delete(msgId); err != nil {
+			slog.Error("unable to prune message",
+				slog.Int("msg_id", msgId),
+				slog.String("error", err.Error()))
 		}
 	}
-	slog.Info("alerts sent", slog.Int("count", len(alerts)))
-	return nil
+
+	// Get fresh alerts
+	parsedResponse, err := ap.Do()
+	if err != nil {
+		panic(err)
+	}
+	freshAlerts := alert.GenerateFromResponse(parsedResponse)
+
+	// Get difference between existing and fresh alerts
+	existingAlerts := alertCol.GetAlerts()
+	toUpdate := *existingAlerts.GetDifferenceWithOldIDs(freshAlerts)
+	if len(toUpdate) == 0 {
+		slog.Info("nothing to update")
+		return
+	}
+
+	// Collect message IDs to delete
+	msgIdsToDelete = make([]int, 0)
+	for i, alert := range toUpdate {
+		// Delete old message
+		if alert.MsgId != 0 {
+			if err := tgBot.Delete(alert.MsgId); err != nil {
+				slog.Error("unable to delete message",
+					slog.Int("msg_id", alert.MsgId),
+					slog.String("error", err.Error()))
+			}
+		}
+
+		// Send new message and update msgId
+		newId, err := tgBot.Send(alert.ToTelegramHTMLString(), tg.ParseHTML)
+		if err != nil {
+			slog.Error("unable to send message", slog.String("error", err.Error()))
+			continue
+		}
+
+		// Collect msgIds for deletion
+		if alert.MsgId != 0 {
+			msgIdsToDelete = append(msgIdsToDelete, alert.MsgId)
+		}
+
+		// Update msgIds for reinsertion
+		alert.MsgId = newId
+		toUpdate[i] = alert
+	}
+
+	// Update mongo, delete dangling alerts, reinsert updated alerts
+	alertCol.DeleteAlertsByFilter(bson.M{"msg_id": bson.M{"$in": msgIdsToDelete}})
+	alertCol.InsertAlerts(&toUpdate)
+
+	return
+}
+
+// Deletes stale mongo alerts and returns their corresponding message IDs
+func pruneStaleMongoAlertsByModel(alertCol *mg.Collection, newModels []string) []int {
+	var msgIds []int
+	filter := bson.M{"_id": bson.M{"$nin": newModels}}
+	toPrune := alertCol.GetAlertsByFilter(filter)
+	if len(*toPrune) == 0 {
+		return msgIds
+	}
+
+	// Collect message IDs
+	for _, alert := range *toPrune {
+		msgIds = append(msgIds, alert.MsgId)
+	}
+
+	count := alertCol.DeleteAlertsByFilter(filter)
+	if count != 0 {
+		slog.Info("pruned alerts", slog.Int64("count", count))
+	}
+
+	return msgIds
 }

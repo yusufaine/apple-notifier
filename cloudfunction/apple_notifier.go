@@ -9,6 +9,7 @@ import (
 	"github.com/yusufaine/apple-inventory-notifier/internal/app/notifier"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/apple"
 	_ "github.com/yusufaine/apple-inventory-notifier/pkg/log"
+	"github.com/yusufaine/apple-inventory-notifier/pkg/mg"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/tg"
 )
 
@@ -35,16 +36,14 @@ func apple_notifierHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Fprintln(w, "notifier completed")
+		slog.Info("notifier completed")
 	}()
 
 	appleReqParams := apple.RequestParamsFromBody(r.Body)
 	defer r.Body.Close()
 
 	tgBot := tg.NewBot(tg.NewConfig(r.Context()))
+	alertCol := mg.NewAlertsConnection(mg.NewConfig(r.Context()))
 
-	if err := notifier.Start(appleReqParams, tgBot); err != nil {
-		slog.Error("notifier failed", slog.String("error", err.Error()))
-		fmt.Fprintln(w, "notifier failed")
-	}
-	slog.Info("notifier completed")
+	notifier.Start(appleReqParams, tgBot, alertCol)
 }
