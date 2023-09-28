@@ -6,6 +6,7 @@ import (
 	"github.com/yusufaine/apple-inventory-notifier/pkg/alert"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/apple"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/mg"
+	"github.com/yusufaine/apple-inventory-notifier/pkg/set"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/tg"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -13,12 +14,16 @@ import (
 func Start(ap *apple.RequestParams, tgBot *tg.Bot, alertCol *mg.Collection) {
 	// Prune alerts
 	msgIdsToDelete := pruneStaleMongoAlertsByModel(alertCol, ap.Models)
-	for _, msgId := range msgIdsToDelete {
-		if err := tgBot.Delete(msgId); err != nil {
-			slog.Error("unable to prune message",
-				slog.Int("msg_id", msgId),
-				slog.String("error", err.Error()))
+	if len(msgIdsToDelete) != 0 {
+		for _, msgId := range msgIdsToDelete {
+			if err := tgBot.Delete(msgId); err != nil {
+				slog.Error("unable to prune message",
+					slog.Int("msg_id", msgId),
+					slog.String("error", err.Error()))
+			}
 		}
+	} else {
+		slog.Info("no alerts to prune")
 	}
 
 	// Get fresh alerts
@@ -26,11 +31,20 @@ func Start(ap *apple.RequestParams, tgBot *tg.Bot, alertCol *mg.Collection) {
 	if err != nil {
 		panic(err)
 	}
-	freshAlerts := alert.GenerateFromResponse(parsedResponse)
+	generatedAlerts := alert.GenerateFromResponse(parsedResponse)
+	slog.Info("generated new alerts from apple stores", slog.Int("alert_count", len(*generatedAlerts)))
+
+	reqModels := set.FromStrings(ap.Models...)
+	for _, alert := range *generatedAlerts {
+		if reqModels.Contains(alert.Model) {
+			continue
+		}
+		slog.Warn("unable to generate alert for " + alert.Model)
+	}
 
 	// Get difference between existing and fresh alerts
 	existingAlerts := alertCol.GetAlerts()
-	toUpdate := *existingAlerts.GetDifferenceWithOldIDs(freshAlerts)
+	toUpdate := *existingAlerts.GetDifferenceWithOldIDs(generatedAlerts)
 	if len(toUpdate) == 0 {
 		slog.Info("nothing to update")
 		return

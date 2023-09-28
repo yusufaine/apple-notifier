@@ -2,7 +2,6 @@ package alert
 
 import (
 	"fmt"
-	"log/slog"
 	"slices"
 	"strings"
 
@@ -149,10 +148,6 @@ func GenerateFromResponse(ar *apple.Response) *Alerts {
 		alert.Shops = shops
 		alerts = append(alerts, alert)
 	}
-
-	slog.Info("generated alerts",
-		slog.Int("alert_count", len(alerts)),
-		slog.Int("model_count", len(modelNameLookup)))
 
 	return &alerts
 }
