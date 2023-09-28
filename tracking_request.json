@@ -1,5 +1,34 @@
 {
   "abbrev_country": "sg",
   "country": "singapore",
-  "models": ["MU7J3ZP/A", "MU7E3ZP/A", "MU793ZP/A"]
+  "models": [
+    "MTUV3ZP/A",
+    "MTUW3ZP/A",
+    "MTUX3ZP/A",
+    "MTV03ZP/A",
+    "MTV13ZP/A",
+    "MTV43ZP/A",
+    "MTV53ZP/A",
+    "MTV63ZP/A",
+    "MTV73ZP/A",
+    "MTV83ZP/A",
+    "MTV93ZP/A",
+    "MTVA3ZP/A",
+    "MTVC3ZP/A",
+    "MTVD3ZP/A",
+    "MTVF3ZP/A",
+    "MTVG3ZP/A",
+    "MU773ZP/A",
+    "MU783ZP/A",
+    "MU793ZP/A",
+    "MU7A3ZP/A",
+    "MU7C3ZP/A",
+    "MU7D3ZP/A",
+    "MU7E3ZP/A",
+    "MU7F3ZP/A",
+    "MU7G3ZP/A",
+    "MU7H3ZP/A",
+    "MU7J3ZP/A",
+    "MU7K3ZP/A"
+  ]
 }

@@ -53,3 +53,7 @@ You can also run your own instance of the bot to track models from other countri
   "models": ["MU7J3ZP/A", "MU7E3ZP/A", "MU793ZP/A"]
 }
 ```
+
+## Credits
+
+There was another Github repo I saw that did something similar but used a desktop application to notify the users that was built in Go with Fyne, I believe. I can't seem to find it anymore but I'd like to credit the author for the inspiration and providing the endpoint to query the Apple Store inventory.

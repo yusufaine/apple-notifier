@@ -9,6 +9,10 @@
   - [Flow](#flow)
     - [Version 1: Eager updates](#version-1-eager-updates)
     - [Version 2: Lazy updates](#version-2-lazy-updates)
+- [Takeaways](#takeaways)
+  - [1. Start with a technical design document (TDD)](#1-start-with-a-technical-design-document-tdd)
+  - [2. Explicitly setting checkpoints](#2-explicitly-setting-checkpoints)
+  - [3. Working with public APIs responsibly](#3-working-with-public-apis-responsibly)
 
 ## Background
 
@@ -32,19 +36,19 @@ Alas, as the time came for pre-orders, I was either too slow or the demand was t
 
 From this section onwards, I'll be detailing the journey of how I built this project from start to "good enough" (because nothing is truly "finished") including the tech stack, implementation details, and the thought process behind it. The goal of this is simply to document my thought process and the decisions I made, and hopefully it'll be useful to someone else.
 
-While writing this article, I realised the importance of writing (some semblance of) a technical design document (TDD) before starting on a project. Had I written a TDD and mulled over the details for while longer instead of diving straight into the code, I would've saved myself a lot of time and effort.
-
 ### Tech considerations
 
 When coming up with this application, I was very certain about ensuring 1 thing — granularity. The application should allow to easily update what models are being tracked and how frequent the polling interval should be, and I've chosen to use Google's Cloud Schedule to schedule sending HTTP POST requests with the payload of the models to track.
 
 As such, the tech stack is as follows:
 
-1. [Go v1.21](https://golang.org/) for the programming language, easy setup
-2. [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) for data persistence, easy setup
-3. [Telegram Bot API](https://core.telegram.org/bots/api) for sending alerts, go-to messaging app
-4. [GCP Cloud Function](https://cloud.google.com/functions) for serverless execution
-5. [GCP Cloud Scheduler](https://cloud.google.com/scheduler) for cron-like scheduling
+|                                                           | **Purpose/Rationale**                                                             |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [**Go**](https://golang.org/)                             | Easy setup, easy to use, my grug brain like ([*context*](https://grugbrain.dev/)) |
+| [**Telegram**](https://core.telegram.org/bots/api)        | Go-to messaging app commonly used by Singaporeans, supports broadcast channels    |
+| [**Cloud Function**](https://cloud.google.com/functions)  | Generous free tier, pay for what you use                                          |
+| [**Cloud Scheduler**](https://cloud.google.com/scheduler) | Setup cron jobs with HTTP POST                                                    |
+| [**MongoDB Atlas**](https://www.mongodb.com/cloud/atlas)  | Data persistence to easily track alerts sent, easy setup                          |
 
 I've also considered hosting the application on fly.io as a single-run execution but decided against it as the scheduling mechanism is not as robust or as fine-grained (not cron-like).
 
@@ -53,9 +57,6 @@ I've also considered hosting the application on fly.io as a single-run execution
 The flow of the application may not exactly be accurate but the gist of it is as follows.
 
 #### Version 1: Eager updates
-
-> [!NOTE]
-> This version is currently in production.
 
 ```mermaid
 sequenceDiagram
@@ -70,7 +71,7 @@ sequenceDiagram
 #### Version 2: Lazy updates
 
 > [!NOTE]
-> This version is currently in development.
+> This version is currently in development as of [30e8b0b](https://github.com/yusufaine/apple-notifier/pull/2).
 
 ```mermaid
 sequenceDiagram
@@ -94,5 +95,33 @@ sequenceDiagram
     Notifier ->> Mongo: Update alerts with the new message IDs
 ```
 
-<!-- ## Takeaways -->
-<!-- TODO: After completing version 2 -->
+## Takeaways
+
+With this weekend project reaching a stable-ish state, there are somethings that I've learnt along the way that I feel are transferable to other projects.
+
+### 1. Start with a technical design document (TDD)
+
+Admittedly, I did NOT do this at the start of this project, and I dove straight into the code. I had a rough idea of what I wanted to do, but I didn't think through the details of how the application should work, and I ultimately had to scrap the progress I made and start over. While some parts were reusable, I had to rewrite a lot of the code to fit the new flow of the application.
+
+So don't be like me, start with a TDD. It doesn't have to be anything formal like what you see in school or at work, but it should help you scope out the requirements of the project and flesh out the flow of the application.
+
+### 2. Explicitly setting checkpoints
+
+> Checkpoints, to-dos, milestones, etc. Whatever you want to call it, they achieve the same thing.
+
+While this is related to [the point above](#1-start-with-a-technical-design-document-tdd), I feel like this is (personally) important enough to warrant its own point.
+
+Something that I've noticed about myself is that I can get overwhelmed very easily as I always want to try and optimise the solution as much as possible the first try, and ultimately crumble when things go south. So the thing I did (after scraping the first attempt) was to set checkpoints for the project.
+
+In this sense, I define checkpoints to be working states of the application which was condensed into the sequence diagrams in [the flow section](#flow), but were as follows:
+
+- [ ] Get inventory details from Apple and figure out how to parse the response, and format the message
+- [ ] Setup [telegram alerts channel](https://t.me/applesg_notifier) and test that the bot is working
+- [ ] Setup Cloud Function and Scheduler and test that the bot is working
+- [ ] Setup MongoDB and store alerts to allow lazy updates
+
+### 3. Working with public APIs responsibly
+
+Typically public APIs would state the constraints of the API, like in the case of Telegram's bot API, which I only found out after I was rate limited for sending too many messages (its 20 messages per minute, by the way).
+
+When it comes to hidden/undocumented public APIs, the details of what can be sent in the request params and response bodies aren't well-defined, so there's a lot of trial and error involved. Thankfully, the API allowed me to send a list of models to check for so I only need to send 1 request instead of bombarding their endpoint with requests for every single model. Something to keep in mind as well is that if the API were to change, the application would break, so just keep that in mind.
