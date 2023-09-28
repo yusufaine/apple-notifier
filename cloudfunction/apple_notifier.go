@@ -9,8 +9,8 @@ import (
 	"github.com/yusufaine/apple-inventory-notifier/internal/app/notifier"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/apple"
 	_ "github.com/yusufaine/apple-inventory-notifier/pkg/log"
-	"github.com/yusufaine/apple-inventory-notifier/pkg/mg"
-	"github.com/yusufaine/apple-inventory-notifier/pkg/tg"
+	"github.com/yusufaine/apple-inventory-notifier/pkg/mongodb"
+	"github.com/yusufaine/apple-inventory-notifier/pkg/telegram"
 )
 
 func init() {
@@ -20,16 +20,15 @@ func init() {
 func apple_notifierHandler(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if r := recover(); r != nil {
-			logMsg := "apple notifier error"
 			switch err := r.(type) {
 			case error:
-				slog.Error(logMsg, slog.String("error", err.Error()))
+				slog.Error(err.Error())
 			case string:
-				slog.Error(logMsg, slog.String("error", err))
+				slog.Error(err)
 			case fmt.Stringer:
-				slog.Error(logMsg, slog.String("error", err.String()))
+				slog.Error(err.String())
 			default:
-				slog.Error(logMsg, slog.String("error", fmt.Sprintf("%#v", err)))
+				slog.Error(fmt.Sprintf("%#v", err))
 			}
 			fmt.Fprintln(w, r)
 			return
@@ -42,8 +41,8 @@ func apple_notifierHandler(w http.ResponseWriter, r *http.Request) {
 	appleReqParams := apple.RequestParamsFromBody(r.Body)
 	defer r.Body.Close()
 
-	tgBot := tg.NewBot(tg.NewConfig(r.Context()))
-	alertCol := mg.NewAlertsConnection(mg.NewConfig(r.Context()))
+	tgBot := telegram.NewBot(telegram.NewConfig(r.Context()))
+	alertCol := mongodb.NewAlertsConnection(mongodb.NewConfig(r.Context()))
 
 	notifier.Start(appleReqParams, tgBot, alertCol)
 }

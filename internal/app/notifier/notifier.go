@@ -5,13 +5,13 @@ import (
 
 	"github.com/yusufaine/apple-inventory-notifier/pkg/alert"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/apple"
-	"github.com/yusufaine/apple-inventory-notifier/pkg/mg"
+	"github.com/yusufaine/apple-inventory-notifier/pkg/mongodb"
 	"github.com/yusufaine/apple-inventory-notifier/pkg/set"
-	"github.com/yusufaine/apple-inventory-notifier/pkg/tg"
+	"github.com/yusufaine/apple-inventory-notifier/pkg/telegram"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func Start(ap *apple.RequestParams, tgBot *tg.Bot, alertCol *mg.Collection) {
+func Start(ap *apple.RequestParams, tgBot *telegram.Bot, alertCol *mongodb.Collection) {
 	// Prune alerts
 	msgIdsToDelete := pruneStaleMongoAlertsByModel(alertCol, ap.Models)
 	if len(msgIdsToDelete) != 0 {
@@ -46,7 +46,7 @@ func Start(ap *apple.RequestParams, tgBot *tg.Bot, alertCol *mg.Collection) {
 	existingAlerts := alertCol.GetAlerts()
 	toUpdate := *existingAlerts.GetDifferenceWithOldIDs(generatedAlerts)
 	if len(toUpdate) == 0 {
-		slog.Info("nothing to update")
+		slog.Info("messages are all up-to-date")
 		return
 	}
 
@@ -63,7 +63,7 @@ func Start(ap *apple.RequestParams, tgBot *tg.Bot, alertCol *mg.Collection) {
 		}
 
 		// Send new message and update msgId
-		newId, err := tgBot.Send(alert.ToTelegramHTMLString(), tg.ParseHTML)
+		newId, err := tgBot.Send(alert.ToTelegramHTMLString(), telegram.ParseHTML)
 		if err != nil {
 			slog.Error("unable to send message", slog.String("error", err.Error()))
 			continue
@@ -87,7 +87,7 @@ func Start(ap *apple.RequestParams, tgBot *tg.Bot, alertCol *mg.Collection) {
 }
 
 // Deletes stale mongo alerts and returns their corresponding message IDs
-func pruneStaleMongoAlertsByModel(alertCol *mg.Collection, newModels []string) []int {
+func pruneStaleMongoAlertsByModel(alertCol *mongodb.Collection, newModels []string) []int {
 	var msgIds []int
 	filter := bson.M{"_id": bson.M{"$nin": newModels}}
 	toPrune := alertCol.GetAlertsByFilter(filter)

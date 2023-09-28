@@ -1,4 +1,4 @@
-package mg
+package mongodb
 
 import (
 	"context"
@@ -8,8 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-const AlertsCollection = "alerts"
 
 type Collection struct {
 	Context context.Context
@@ -23,7 +21,7 @@ func NewAlertsConnection(c *Config) *Collection {
 	}
 	return &Collection{
 		Context: c.Context,
-		col:     client.Database(c.MongoDb).Collection(AlertsCollection),
+		col:     client.Database(c.MongoDb).Collection(c.MongoColl),
 	}
 }
 

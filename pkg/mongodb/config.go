@@ -1,4 +1,4 @@
-package mg
+package mongodb
 
 import (
 	"context"
@@ -6,12 +6,16 @@ import (
 )
 
 type Config struct {
-	Context  context.Context
-	MongoDb  string
-	MongoUri string
+	Context   context.Context
+	MongoColl string
+	MongoDb   string
+	MongoUri  string
 }
 
 func (c *Config) mustValidate() {
+	if c.MongoColl == "" {
+		panic("'MONGO_COLL' must be specified")
+	}
 	if c.MongoDb == "" {
 		panic("'MONGO_DB' must be specified")
 	}
@@ -22,9 +26,10 @@ func (c *Config) mustValidate() {
 
 func NewConfig(ctx context.Context) *Config {
 	c := &Config{
-		Context:  ctx,
-		MongoDb:  os.Getenv("MONGO_DB"),
-		MongoUri: os.Getenv("MONGO_URI"),
+		Context:   ctx,
+		MongoColl: os.Getenv("MONGO_COLL"),
+		MongoDb:   os.Getenv("MONGO_DB"),
+		MongoUri:  os.Getenv("MONGO_URI"),
 	}
 	c.mustValidate()
 

@@ -1,17 +1,16 @@
-package tg
+package telegram
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
 
-	"golang.org/x/time/rate"
+	"github.com/yusufaine/apple-inventory-notifier/pkg/rlclient"
 )
 
 type ParseMode string
@@ -19,15 +18,14 @@ type ParseMode string
 const (
 	ParseHTML       ParseMode = "html"
 	ParseMarkdown   ParseMode = "Markdown"
-	ParseMarkdownV2 ParseMode = "Markdown"
+	ParseMarkdownV2 ParseMode = "MarkdownV2"
 )
 
 type Bot struct {
 	botEp  url.URL
 	chatId string
 	ctx    context.Context
-	hc     *http.Client
-	rl     *rate.Limiter
+	rlc    *rlclient.Client
 }
 
 func NewBot(c *Config) *Bot {
@@ -41,8 +39,7 @@ func NewBot(c *Config) *Bot {
 		botEp:  ep,
 		chatId: c.ChatId,
 		ctx:    c.Context,
-		hc:     http.DefaultClient, // potentially make a client wrapper with rate limiting
-		rl:     rate.NewLimiter(rate.Every(time.Minute), 15),
+		rlc:    rlclient.New(c.Context), // 15 qpm
 	}
 
 	return tg
@@ -59,12 +56,12 @@ func (b *Bot) Delete(msgId int) error {
 
 	ep := b.botEp
 	ep.Path += "/deleteMessage"
-	req, err := b.newRequestWithHeader(http.MethodPost, ep.String(), bytes.NewReader(reqBody))
+	req, err := newTgRequest(b.ctx, http.MethodPost, ep.String(), bytes.NewReader(reqBody))
 	if err != nil {
 		return err
 	}
 
-	_, err = b.doRequest(req)
+	_, err = b.rlc.Do(req)
 	if err != nil {
 		return err
 	}
@@ -72,9 +69,9 @@ func (b *Bot) Delete(msgId int) error {
 	return nil
 }
 
-func (tw *Bot) Send(text string, p ParseMode) (int, error) {
+func (b *Bot) Send(text string, p ParseMode) (int, error) {
 	reqBody, err := json.Marshal(map[string]interface{}{
-		"chat_id":                  tw.chatId,
+		"chat_id":                  b.chatId,
 		"disable_web_page_preview": true,
 		"parse_mode":               string(p),
 		"text":                     text,
@@ -83,14 +80,14 @@ func (tw *Bot) Send(text string, p ParseMode) (int, error) {
 		return 0, err
 	}
 
-	ep := tw.botEp
+	ep := b.botEp
 	ep.Path += "/sendMessage"
-	req, err := tw.newRequestWithHeader(http.MethodPost, ep.String(), bytes.NewReader(reqBody))
+	req, err := newTgRequest(b.ctx, http.MethodPost, ep.String(), bytes.NewReader(reqBody))
 	if err != nil {
 		return 0, err
 	}
 
-	body, err := tw.doRequest(req)
+	body, err := b.rlc.Do(req)
 	if err != nil {
 		return 0, err
 	}
@@ -108,42 +105,19 @@ func (tw *Bot) Send(text string, p ParseMode) (int, error) {
 }
 
 // This blocks the program for the specified duration
-func (tw *Bot) TempWrite(text string, d time.Duration, p ParseMode) {
-	msgId, err := tw.Send(text, p)
+func (b *Bot) TempSend(text string, d time.Duration, p ParseMode) {
+	msgId, err := b.Send(text, p)
 	if err != nil {
 		slog.Error("unable to temp write to telegram", slog.String("error", err.Error()))
 		return
 	}
 	time.Sleep(d)
-	tw.Delete(msgId)
-}
-
-func (b *Bot) doRequest(req *http.Request) ([]byte, error) {
-	if err := b.rl.Wait(b.ctx); err != nil {
-		return nil, err
-	}
-
-	resp, err := b.hc.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf(string(body))
-	}
-
-	return body, nil
+	b.Delete(msgId)
 }
 
 // Convenience method to always set the content type of the request
-func (tw *Bot) newRequestWithHeader(method, url string, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequestWithContext(tw.ctx, method, url, body)
+func newTgRequest(ctx context.Context, method, url string, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
 	}
