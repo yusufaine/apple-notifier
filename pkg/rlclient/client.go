@@ -20,8 +20,9 @@ type Client struct {
 // and is configurable using RlOpts.
 func New(ctx context.Context, opts ...RlOpts) *Client {
 	client := &Client{
-		cl: http.DefaultClient,
-		rl: rate.NewLimiter(rate.Every(time.Minute), 15),
+		Context: ctx,
+		cl:      http.DefaultClient,
+		rl:      rate.NewLimiter(rate.Every(time.Minute), 15),
 	}
 
 	for _, opt := range opts {
@@ -41,6 +42,10 @@ func (c *Client) Do(req *http.Request) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp == nil {
+		return nil, fmt.Errorf("response body is nil")
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

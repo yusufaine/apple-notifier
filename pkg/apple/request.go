@@ -62,13 +62,17 @@ func (r *RequestParams) Do() (*Response, error) {
 		return nil, err
 	}
 
-	res, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	data, err := io.ReadAll(res.Body)
+	if resp == nil {
+		return nil, fmt.Errorf("response body is nil")
+	}
+
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

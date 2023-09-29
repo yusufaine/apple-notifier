@@ -49,6 +49,7 @@ func Start(ap *apple.RequestParams, tgBot *telegram.Bot, alertCol *mongodb.Colle
 		slog.Info("messages are all up-to-date")
 		return
 	}
+	slog.Info("new alerts detected")
 
 	// Collect message IDs to delete
 	msgIdsToDelete = make([]int, 0)
