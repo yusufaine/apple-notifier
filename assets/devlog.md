@@ -10,7 +10,7 @@
     - [Version 1: Eager updates](#version-1-eager-updates)
     - [Version 2: Lazy updates](#version-2-lazy-updates)
 - [Takeaways](#takeaways)
-  - [1. Start with a technical design document (TDD)](#1-start-with-a-technical-design-document-tdd)
+  - [1. Start with a TDD](#1-start-with-a-tdd)
   - [2. Explicitly setting checkpoints](#2-explicitly-setting-checkpoints)
   - [3. Working with public APIs responsibly](#3-working-with-public-apis-responsibly)
 
@@ -71,7 +71,7 @@ sequenceDiagram
 #### Version 2: Lazy updates
 
 > [!NOTE]
-> This version is currently in development as of [30e8b0b](https://github.com/yusufaine/apple-notifier/pull/2).
+> This is in production!
 
 ```mermaid
 sequenceDiagram
@@ -99,7 +99,7 @@ sequenceDiagram
 
 With this weekend project reaching a stable-ish state, there are somethings that I've learnt along the way that I feel are transferable to other projects.
 
-### 1. Start with a technical design document (TDD)
+### 1. Start with a TDD
 
 Admittedly, I did NOT do this at the start of this project, and I dove straight into the code. I had a rough idea of what I wanted to do, but I didn't think through the details of how the application should work, and I ultimately had to scrap the progress I made and start over. While some parts were reusable, I had to rewrite a lot of the code to fit the new flow of the application.
 
@@ -109,7 +109,7 @@ So don't be like me, start with a TDD. It doesn't have to be anything formal lik
 
 > Checkpoints, to-dos, milestones, etc. Whatever you want to call it, they achieve the same thing.
 
-While this is related to [the point above](#1-start-with-a-technical-design-document-tdd), I feel like this is (personally) important enough to warrant its own point.
+While this is related to [the point above](1-start-with-a-tdd), I feel like this is (personally) important enough to warrant its own point.
 
 Something that I've noticed about myself is that I can get overwhelmed very easily as I always want to try and optimise the solution as much as possible the first try, and ultimately crumble when things go south. So the thing I did (after scraping the first attempt) was to set checkpoints for the project.
 

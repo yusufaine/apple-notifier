@@ -11,11 +11,13 @@ Telegram bot that notifies you when the Apple Store in Singapore has the product
 
 ## Tech Stack
 
-- [Go v1.21](https://golang.org/)
-- [GCP Cloud Function](https://cloud.google.com/functions) for serverless execution
-- [GCP Cloud Scheduler](https://cloud.google.com/scheduler) for scheduling execution
-- [Telegram Bot API](https://core.telegram.org/bots/api) for sending notifications
-<!-- - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) for data persistence -->
+|                                                           | **Purpose/Rationale**                                                             |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [**Go**](https://golang.org/)                             | Easy setup, easy to use, my grug brain like ([*context*](https://grugbrain.dev/)) |
+| [**Telegram**](https://core.telegram.org/bots/api)        | Go-to messaging app commonly used by Singaporeans, supports broadcast channels    |
+| [**Cloud Function**](https://cloud.google.com/functions)  | Generous free tier, pay for what you use                                          |
+| [**Cloud Scheduler**](https://cloud.google.com/scheduler) | Setup cron jobs with HTTP POST                                                    |
+| [**MongoDB Atlas**](https://www.mongodb.com/cloud/atlas)  | Data persistence to easily track alerts sent, easy setup                          |
 
 > [!NOTE]
 > For the full details, feel free to read in the [devlog](https://github.com/yusufaine/apple-notifier/blob/main/assets/devlog.md).
