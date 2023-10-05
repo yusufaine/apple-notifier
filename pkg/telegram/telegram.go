@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/yusufaine/apple-inventory-notifier/pkg/rlclient"
+	"golang.org/x/time/rate"
 )
 
 type ParseMode string
@@ -35,11 +36,13 @@ func NewBot(c *Config) *Bot {
 		Path:   "/bot" + c.Token,
 	}
 
+	// 1 request per 4 seconds -- tg's limit is 20 qpm, conservatively set to 15 qpm
+	rl := rate.NewLimiter(rate.Every(4*time.Second), 1)
 	tg := &Bot{
 		botEp:  ep,
 		chatId: c.ChatId,
 		ctx:    c.Context,
-		rlc:    rlclient.New(c.Context), // 15 qpm
+		rlc:    rlclient.New(c.Context, rlclient.WithRateLimiter(rl)),
 	}
 
 	return tg

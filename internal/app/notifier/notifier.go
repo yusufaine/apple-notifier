@@ -27,7 +27,7 @@ func Start(ap *apple.RequestParams, tgBot *telegram.Bot, alertCol *mongodb.Colle
 	}
 
 	// Get fresh alerts
-	parsedResponse, err := ap.Do()
+	parsedResponse, err := ap.QueryApple()
 	if err != nil {
 		panic(err)
 	}

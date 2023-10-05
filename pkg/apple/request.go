@@ -25,38 +25,9 @@ type RequestParams struct {
 	Models        []string `json:"models"`
 }
 
-func RequestParamsFromBody(body io.ReadCloser) *RequestParams {
-	b, err := io.ReadAll(body)
-	defer body.Close()
-	if err != nil {
-		panic("unable to read request body")
-	}
-
-	// Initialise params needed for Apple query
-	var appleReq RequestParams
-	if err := json.Unmarshal(b, &appleReq); err != nil {
-		panic("unable to unmarshal request body")
-	}
-	appleReq.MustValidate()
-
-	return &appleReq
-}
-
-func (r *RequestParams) MustValidate() {
-	if len(r.AbbrevCountry) == 0 {
-		panic("'abbrev_country' must be a non-empty string")
-	}
-	if len(r.Country) == 0 {
-		panic("'country' must be a non-empty string")
-	}
-	if len(r.Models) == 0 {
-		panic("'models' must be a non-empty string array")
-	}
-}
-
 // Returns the raw content of the response to the query
-func (r *RequestParams) Do() (*Response, error) {
-	ep := GeneratePickupUrl(r.AbbrevCountry, r.Country, r.Models)
+func (r *RequestParams) QueryApple() (*Response, error) {
+	ep := generatePickupUrl(r.AbbrevCountry, r.Country, r.Models)
 	req, err := http.NewRequest(http.MethodGet, ep, nil)
 	if err != nil {
 		return nil, err
@@ -89,7 +60,7 @@ func (r *RequestParams) Do() (*Response, error) {
 //
 //	abbrevCountry := "sg"
 //	country       := "singapore"
-func GeneratePickupUrl(abbrevCountry, country string, models []string) string {
+func generatePickupUrl(abbrevCountry, country string, models []string) string {
 	ep := url.URL{
 		Scheme: "https",
 		Host:   "www.apple.com",

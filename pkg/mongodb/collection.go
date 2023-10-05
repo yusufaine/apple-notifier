@@ -89,3 +89,9 @@ func (c *Collection) DeleteAlertsByFilter(filter bson.M) int64 {
 
 	return res.DeletedCount
 }
+
+func (c *Collection) Close() {
+	if err := c.col.Database().Client().Disconnect(c.Context); err != nil {
+		panic(err)
+	}
+}

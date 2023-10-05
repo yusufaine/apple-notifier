@@ -2,7 +2,6 @@ package rlclient
 
 import (
 	"net/http"
-	"time"
 
 	"golang.org/x/time/rate"
 )
@@ -15,8 +14,8 @@ func WithHttpClient(cl *http.Client) RlOpts {
 	}
 }
 
-func WithRateLimit(interval time.Duration, tokens int) RlOpts {
+func WithRateLimiter(rl *rate.Limiter) RlOpts {
 	return func(c *Client) {
-		c.rl = rate.NewLimiter(rate.Every(interval), tokens)
+		c.rl = rl
 	}
 }

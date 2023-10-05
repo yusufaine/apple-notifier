@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"golang.org/x/time/rate"
 )
@@ -16,13 +15,13 @@ type Client struct {
 	rl *rate.Limiter
 }
 
-// Creates a new rate-limited client, defaulting to 15 queries per minute,
+// Creates a new rate-limited client, defaulting to 1 request per second,
 // and is configurable using RlOpts.
 func New(ctx context.Context, opts ...RlOpts) *Client {
 	client := &Client{
 		Context: ctx,
 		cl:      http.DefaultClient,
-		rl:      rate.NewLimiter(rate.Every(time.Minute), 15),
+		rl:      rate.NewLimiter(1, 1),
 	}
 
 	for _, opt := range opts {
