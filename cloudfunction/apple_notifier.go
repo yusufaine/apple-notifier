@@ -17,10 +17,10 @@ import (
 )
 
 func init() {
-	functions.HTTP("apple_notifier", apple_notifierHandler)
+	functions.HTTP("apple_notifier", AppleNotifierHandler)
 }
 
-func apple_notifierHandler(w http.ResponseWriter, r *http.Request) {
+func AppleNotifierHandler(w http.ResponseWriter, r *http.Request) {
 	setupSlog()
 	defer func() {
 		if r := recover(); r != nil {
