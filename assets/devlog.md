@@ -13,6 +13,7 @@
   - [1. Start with a TDD](#1-start-with-a-tdd)
   - [2. Explicitly setting checkpoints](#2-explicitly-setting-checkpoints)
   - [3. Working with public APIs responsibly](#3-working-with-public-apis-responsibly)
+  - [4. Memory leaks in serverless functions](#4-memory-leaks-in-serverless-functions)
 
 ## Background
 
@@ -125,3 +126,15 @@ In this sense, I define checkpoints to be working states of the application whic
 Typically public APIs would state the constraints of the API, like in the case of Telegram's bot API, which I only found out after I was rate limited for sending too many messages (its 20 messages per minute, by the way).
 
 When it comes to hidden/undocumented public APIs, the details of what can be sent in the request params and response bodies aren't well-defined, so there's a lot of trial and error involved. Thankfully, the API allowed me to send a list of models to check for so I only need to send 1 request instead of bombarding their endpoint with requests for every single model. Something to keep in mind as well is that if the API were to change, the application would break, so just keep that in mind.
+
+### 4. Memory leaks in serverless functions
+
+Sneaky edit but I recently encountered this issue:
+
+![Cloud Function memory leak?!](./cloud_func_metrics_01.png)
+
+> Why is there a memory leak, isn't Cloud Function supposed to be stateless?!
+
+Turns out, there are instances that lead to "memory leaks" (or rather, memory not being freed) in serverless functions. Some of which were discussed in this [StackOverflow post](https://stackoverflow.com/questions/65481589/memory-leak-in-google-cloud-function). Turns out my particular issue was that I did not explicitly close the Mongo connection, so the connection was kept alive and the memory was not freed -- well, TIL!
+
+![Fixed Cloud Function memory leak](./cloud_func_metrics_02.png)
