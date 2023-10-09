@@ -20,7 +20,7 @@ Telegram bot that notifies you when the Apple Store in Singapore has the product
 | [**MongoDB Atlas**](https://www.mongodb.com/cloud/atlas)  | Data persistence to easily track alerts sent, easy setup                          |
 
 > [!NOTE]
-> For the full details, feel free to read in the [devlog](https://github.com/yusufaine/apple-notifier/blob/main/assets/devlog.md).
+> For the full details, feel free to read in the [devlog](https://yusufaine.dev/apple-sg-notifier).
 
 ### Local development and testing
 
