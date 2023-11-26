@@ -157,7 +157,7 @@ func isAvailable(storeAvail bool, partAvail string, model string) bool {
 	switch strings.ToLower(partAvail) {
 	case "available":
 		part = true
-	case "unavailable": // do nothing
+	case "unavailable", "ineligible": // do nothing
 	default:
 		panic(fmt.Sprintf("unable to parse availability: %s", partAvail))
 	}
